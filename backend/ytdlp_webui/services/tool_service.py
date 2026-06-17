@@ -84,6 +84,7 @@ class ToolService:
                 check=False,
                 capture_output=True,
                 text=True,
+                stdin=subprocess.DEVNULL,
                 timeout=10,
             )
             first = (result.stdout or result.stderr).splitlines()[0]
