@@ -24,9 +24,24 @@ class RunningProcess:
     async def stop(self) -> int:
         if self.process.returncode is not None:
             return self.process.returncode
-        self.process.terminate()
+
+        import psutil
         try:
-            return await asyncio.wait_for(self.process.wait(), timeout=10)
+            parent = psutil.Process(self.process.pid)
+            children = parent.children(recursive=True)
+            for child in children:
+                try:
+                    child.kill()
+                except psutil.NoSuchProcess:
+                    pass
+            parent.kill()
+        except psutil.NoSuchProcess:
+            pass
+        except Exception:
+            self.process.terminate()
+
+        try:
+            return await asyncio.wait_for(self.process.wait(), timeout=5)
         except TimeoutError:
             self.process.kill()
             return await self.process.wait()
