@@ -25,15 +25,22 @@ class EventBus:
         async with self._lock:
             self._clients.discard(websocket)
 
-    async def publish(self, event_type: str, payload: dict[str, Any] | None = None) -> None:
+    async def publish(
+        self,
+        event_type: str,
+        payload: dict[str, Any] | None = None,
+        *,
+        retain: bool = True,
+    ) -> None:
         event = {
             "type": event_type,
             "payload": payload or {},
             "timestamp": datetime.now(UTC).isoformat(),
         }
         async with self._lock:
-            self.recent.append(event)
-            self.recent = self.recent[-300:]
+            if retain:
+                self.recent.append(event)
+                self.recent = self.recent[-300:]
             clients = list(self._clients)
         stale: list[WebSocket] = []
         for client in clients:
@@ -54,5 +61,4 @@ class EventBus:
             "system.log",
             {"line": f"[{datetime.now(UTC).strftime('%H:%M:%S')}] {message}"},
         )
-
 

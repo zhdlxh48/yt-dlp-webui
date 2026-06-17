@@ -39,8 +39,9 @@ async def start_download(
 async def stop_job(
     job_id: str,
     recorder: RecorderDep,
+    force: bool = False,
 ) -> JobInfo:
     try:
-        return await recorder.stop(job_id)
+        return await recorder.stop(job_id, force=force)
     except KeyError as exc:
         raise HTTPException(status_code=404, detail="Job not found") from exc
