@@ -199,12 +199,12 @@
 
   <div class="drawer-content flex flex-col min-h-screen">
     <header class="navbar bg-base-100 border-b border-base-200/50 px-4 flex justify-between lg:hidden sticky top-0 z-30 shadow-sm shrink-0">
-      <div class="flex-none">
+      <div class="flex-none mr-2">
         <label for="app-drawer" class="btn btn-ghost btn-square drawer-button">
           <Menu size={20} />
         </label>
       </div>
-      <div class="flex-1 justify-center pr-8">
+      <div class="flex-1 justify-center">
         <span class="text-lg font-bold tracking-tight bg-linear-to-r from-primary to-secondary bg-clip-text text-transparent">
           yt-dlp webui
         </span>
