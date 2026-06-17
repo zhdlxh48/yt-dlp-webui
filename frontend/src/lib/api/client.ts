@@ -17,7 +17,8 @@ export const api = {
   saveSettings: (settings: Settings) =>
     request<Settings>('/api/settings', { method: 'PUT', body: JSON.stringify(settings) }),
   tools: () => request<ToolStatus>('/api/tools'),
-  installTools: () => request<ToolStatus>('/api/tools/install', { method: 'POST' }),
+  installTools: (force = false) => request<ToolStatus>(`/api/tools/install?force=${force}`, { method: 'POST' }),
+  openToolsFolder: () => request<void>('/api/tools/open-folder', { method: 'POST' }),
   jobs: () => request<JobInfo[]>('/api/jobs'),
   startLive: (channelIds: string[] = []) =>
     request<JobInfo[]>('/api/jobs/live/start', {

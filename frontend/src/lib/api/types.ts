@@ -1,6 +1,7 @@
 export type LiveChannel = {
   id: string
   name: string
+  handle: string
   url: string
   enabled: boolean
 }
@@ -65,6 +66,7 @@ export type JobInfo = {
   started_at: string
   finished_at: string
   return_code: number | null
+  channel_id?: string
 }
 
 export type FileInfo = {
@@ -84,6 +86,7 @@ export type AppEvent = {
     | 'job.error'
     | 'tools.status'
     | 'settings.updated'
+    | 'system.log'
   payload: Record<string, unknown>
   timestamp: string
 }

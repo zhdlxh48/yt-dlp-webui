@@ -17,7 +17,7 @@ export function connectEvents(): void {
   socket.addEventListener('message', (message) => {
     const event = JSON.parse(message.data) as AppEvent
     events.update((items) => [event, ...items].slice(0, 200))
-    if (event.type === 'job.log') {
+    if (event.type === 'job.log' || event.type === 'system.log') {
       const line = String(event.payload.line ?? '')
       logs.update((items) => [line, ...items].slice(0, 500))
     }
