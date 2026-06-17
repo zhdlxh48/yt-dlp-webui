@@ -74,11 +74,11 @@
         <table class="table table-zebra table-md w-full">
           <thead>
             <tr class="bg-base-200/50 text-base-content/70">
-              <th>이름</th>
-              <th>유튜브 핸들</th>
-              <th>사용 여부</th>
-              <th>상태</th>
-              <th class="text-right">작업</th>
+              <th class="whitespace-nowrap min-w-30">이름</th>
+              <th class="whitespace-nowrap min-w-35">유튜브 핸들</th>
+              <th class="text-center whitespace-nowrap w-24">사용 여부</th>
+              <th class="text-center whitespace-nowrap w-28">상태</th>
+              <th class="text-center whitespace-nowrap w-48">작업</th>
             </tr>
           </thead>
           <tbody>
@@ -98,18 +98,18 @@
             {/each}
 
             {#if isAdding}
-              <tr class="bg-base-200/30">
-                <td>
+              <tr class="bg-base-200/30 align-middle">
+                <td class="whitespace-nowrap">
                   <input class="input input-sm input-bordered w-full" bind:value={newName} placeholder="채널 이름" />
                 </td>
-                <td>
+                <td class="whitespace-nowrap">
                   <input class="input input-sm input-bordered w-full" bind:value={newHandle} placeholder="@handle" />
                 </td>
-                <td>
+                <td class="text-center whitespace-nowrap">
                   <span class="text-xs opacity-60">ON</span>
                 </td>
-                <td>-</td>
-                <td class="text-right space-x-1.5">
+                <td class="text-center whitespace-nowrap">-</td>
+                <td class="text-right whitespace-nowrap space-x-1.5">
                   <button class="btn btn-sm btn-success text-success-content" disabled={busy} on:click={handleAddChannel}>저장</button>
                   <button class="btn btn-sm btn-ghost" on:click={cancelAddChannel}>취소</button>
                 </td>

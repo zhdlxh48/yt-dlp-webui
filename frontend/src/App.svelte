@@ -5,18 +5,20 @@
   import type { FileInfo, JobInfo, LiveChannel, Settings, ToolStatus } from '@/types'
   import { connected, connectEvents, events, jobProgress, logs } from '@/stores/events'
   import Sidebar from '@/components/layout/Sidebar.svelte'
-  import Dashboard from '@/components/dashboard/Dashboard.svelte'
+  import ChannelList from '@/components/channels/ChannelList.svelte'
+  import GeneralDownload from '@/components/downloads/GeneralDownload.svelte'
+  import JobList from '@/components/downloads/JobList.svelte'
   import SettingsForm from '@/components/settings/SettingsForm.svelte'
   import ToolsStatus from '@/components/settings/ToolsStatus.svelte'
   import FileList from '@/components/files/FileList.svelte'
   import ToolsModal from '@/components/common/ToolsModal.svelte'
-  import LogConsole from '@/components/dashboard/LogConsole.svelte'
+  import RightDock from '@/components/layout/RightDock.svelte'
 
   let settings: Settings | null = null
   let tools: ToolStatus = { tools: [] }
   let jobs: JobInfo[] = []
   let files: FileInfo[] = []
-  let activeTab: 'dashboard' | 'settings' | 'files' = 'dashboard'
+  let activeTab: 'live' | 'downloads' | 'settings' | 'files' = 'live'
   let busy = false
   let errorMessage = ''
   let downloadPercents: Record<string, number> = { 'yt-dlp': 0, ffmpeg: 0, deno: 0 }
@@ -115,9 +117,10 @@
   }
 
   async function saveSettings() {
-    if (!settings) return
+    const currentSettings = settings
+    if (!currentSettings) return
     await withBusy(async () => {
-      settings = await api.saveSettings(settings)
+      settings = await api.saveSettings(currentSettings)
       files = await api.files()
     })
   }
@@ -172,7 +175,9 @@
     }
   }
 
-  $: runningJobs = jobs.filter((job) => ['starting', 'running', 'stopping'].includes(job.status))
+  $: runningLiveJobs = jobs.filter((job) => job.kind === 'live' && ['starting', 'running', 'stopping'].includes(job.status))
+  $: runningDownloadJobs = jobs.filter((job) => job.kind === 'download' && ['starting', 'running', 'stopping'].includes(job.status))
+  $: downloadJobs = jobs.filter((job) => job.kind === 'download')
   $: installedCount = tools.tools.filter((tool) => tool.installed).length
   $: toolMessage = (() => {
     const statusEvent = $events.find((event) => event.type === 'tools.status')
@@ -192,65 +197,83 @@
 <div class="drawer lg:drawer-open min-h-screen bg-base-200">
   <input id="app-drawer" type="checkbox" class="drawer-toggle" bind:checked={drawerChecked} />
 
-  <div class="drawer-content flex flex-col min-h-screen">
-    <header class="navbar bg-base-100 border-b border-base-200/50 px-4 flex justify-between lg:hidden sticky top-0 z-30 shadow-sm">
-      <div class="flex-none">
+  <div class="drawer-content flex flex-col min-h-screen min-w-0">
+    <header class="navbar bg-base-100 border-b border-base-200/50 px-4 flex justify-between lg:hidden sticky top-0 z-30 shadow-sm shrink-0">
+      <div class="flex-none mr-4">
         <label for="app-drawer" class="btn btn-ghost btn-square drawer-button">
           <Menu size={20} />
         </label>
       </div>
-      <div class="flex-1 justify-center pr-8">
-        <span class="text-lg font-bold tracking-tight bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+      <div class="flex-1 justify-center">
+        <span class="text-lg font-bold tracking-tight bg-linear-to-r from-primary to-secondary bg-clip-text text-transparent">
           yt-dlp webui
         </span>
       </div>
     </header>
 
-    <main class="flex-1 p-4 lg:p-6 w-full space-y-6">
-      {#if errorMessage}
-        <div class="alert alert-error shadow-sm border border-error/20">
-          <span>{errorMessage}</span>
-        </div>
-      {/if}
+    <div class="flex-1 flex overflow-hidden min-w-0 relative">
+      <div class="flex-1 overflow-y-auto min-w-0">
+        <main class="p-4 lg:p-6 space-y-6">
+          {#if errorMessage}
+            <div class="alert alert-error shadow-sm border border-error/20">
+              <span>{errorMessage}</span>
+            </div>
+          {/if}
 
-      {#if activeTab === 'dashboard'}
-        <Dashboard
-          {settings}
-          {jobs}
-          progressItems={$jobProgress}
-          {busy}
-          {installedCount}
-          onStartLive={() => startLive()}
-          onAddChannel={handleAddChannel}
-          onEditChannel={handleEditChannel}
-          onDeleteChannel={handleDeleteChannel}
-          onToggleMonitoring={handleToggleChannelMonitoring}
-          onDownload={startDownload}
-          onStopJob={stopJob}
-        />
-      {/if}
+          {#if activeTab === 'live'}
+            <ChannelList
+              {settings}
+              {jobs}
+              {busy}
+              {installedCount}
+              onStartLive={() => startLive()}
+              onAddChannel={handleAddChannel}
+              onEditChannel={handleEditChannel}
+              onDeleteChannel={handleDeleteChannel}
+              onToggleMonitoring={handleToggleChannelMonitoring}
+            />
+          {/if}
 
-      {#if activeTab === 'settings' && settings}
-        <section class="grid gap-6 lg:grid-cols-[1.25fr_0.75fr] w-full items-start">
-          <SettingsForm bind:settings {busy} onSave={saveSettings} />
-          <ToolsStatus
-            {tools}
-            {busy}
-            {downloadPercents}
-            {toolMessage}
-            hasRunningJobs={runningJobs.length > 0}
-            onOpenToolsFolder={openToolsFolder}
-            onInstallTools={installTools}
-          />
-        </section>
-      {/if}
+          {#if activeTab === 'downloads'}
+            <div class="space-y-6">
+              <GeneralDownload {busy} onDownload={startDownload} />
+              <JobList
+                jobs={downloadJobs}
+                runningJobs={runningDownloadJobs}
+                onStopJob={stopJob}
+              />
+            </div>
+          {/if}
 
-      {#if activeTab === 'files'}
-        <section>
-          <FileList {files} />
-        </section>
-      {/if}
-    </main>
+          {#if activeTab === 'settings' && settings}
+            <section class="flex flex-wrap gap-6 items-start">
+              <div class="flex-[1.25] min-w-[280px] sm:min-w-[500px] min-w-0">
+                <SettingsForm bind:settings {busy} onSave={saveSettings} />
+              </div>
+              <div class="flex-[0.75] min-w-[280px] sm:min-w-[320px] min-w-0">
+                <ToolsStatus
+                  {tools}
+                  {busy}
+                  {downloadPercents}
+                  {toolMessage}
+                  hasRunningJobs={runningLiveJobs.length + runningDownloadJobs.length > 0}
+                  onOpenToolsFolder={openToolsFolder}
+                  onInstallTools={installTools}
+                />
+              </div>
+            </section>
+          {/if}
+
+          {#if activeTab === 'files'}
+            <section>
+              <FileList {files} />
+            </section>
+          {/if}
+        </main>
+      </div>
+
+      <RightDock progressItems={$jobProgress} logs={$logs} />
+    </div>
   </div>
 
   <div class="drawer-side z-40">
@@ -258,7 +281,8 @@
     <Sidebar
       bind:activeTab
       connected={$connected}
-      runningJobsCount={runningJobs.length}
+      runningLiveJobsCount={runningLiveJobs.length}
+      runningDownloadJobsCount={runningDownloadJobs.length}
       channelsCount={settings?.live.channels.length || 0}
     />
   </div>
@@ -272,5 +296,3 @@
     onInstallTools={installTools}
   />
 {/if}
-
-<LogConsole logs={$logs} />

@@ -38,31 +38,31 @@
 
 {#if isEditing}
   <tr class="align-middle">
-    <td>
+    <td class="whitespace-nowrap">
       <input class="input input-sm input-bordered w-full font-medium" bind:value={editName} placeholder="채널 이름" />
     </td>
-    <td>
+    <td class="whitespace-nowrap">
       <input class="input input-sm input-bordered w-full font-mono text-xs" bind:value={editHandle} placeholder="@handle" />
     </td>
-    <td class="text-center">
+    <td class="text-center whitespace-nowrap">
       <input type="checkbox" class="checkbox checkbox-sm checkbox-primary" bind:checked={editEnabled} />
     </td>
-    <td><span class="text-xs opacity-40">-</span></td>
-    <td class="text-right space-x-1.5">
+    <td class="text-center whitespace-nowrap"><span class="text-xs opacity-40">-</span></td>
+    <td class="text-right whitespace-nowrap space-x-1.5">
       <button class="btn btn-sm btn-success text-success-content" disabled={busy} on:click={handleSave}>저장</button>
       <button class="btn btn-sm btn-ghost" on:click={onCancelEdit}>취소</button>
     </td>
   </tr>
 {:else}
   <tr class="hover:bg-base-200/40 transition-colors align-middle">
-    <td class="font-semibold text-base-content">{channel.name || '-'}</td>
-    <td class="font-mono text-xs opacity-75">{channel.handle || '-'}</td>
-    <td>
+    <td class="font-semibold text-base-content max-w-[150px] truncate">{channel.name || '-'}</td>
+    <td class="font-mono text-xs opacity-75 whitespace-nowrap">{channel.handle || '-'}</td>
+    <td class="text-center whitespace-nowrap">
       <span class="badge badge-sm font-semibold transition-all" class:badge-success={channel.enabled} class:badge-ghost={!channel.enabled} class:opacity-60={!channel.enabled}>
         {channel.enabled ? 'ON' : 'OFF'}
       </span>
     </td>
-    <td>
+    <td class="text-center whitespace-nowrap">
       {#if activeJob}
         <span
           class="badge badge-sm gap-1.5 font-bold border-none shadow-sm"
@@ -77,9 +77,9 @@
         <span class="badge badge-ghost badge-sm opacity-60 text-xs font-medium">대기</span>
       {/if}
     </td>
-    <td class="text-right space-x-1.5">
+    <td class="text-right whitespace-nowrap space-x-1.5">
       {#if activeJob}
-        <div class="inline-flex gap-1">
+        <div class="inline-flex gap-1 align-middle">
           <button
             class="btn btn-xs btn-error btn-outline shadow-sm"
             disabled={busy || installedCount < 1 || isStopping}

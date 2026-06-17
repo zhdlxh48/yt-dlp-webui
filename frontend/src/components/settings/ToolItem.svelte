@@ -6,7 +6,7 @@
   export let downloadPercent: number
 </script>
 
-<div class="rounded-xl border border-base-200 p-3.5 bg-base-200/20 hover:bg-base-200/40 transition-all duration-200 shadow-sm flex flex-col gap-2">
+<div class="rounded-xl border border-base-200 p-3.5 bg-base-200/20 hover:bg-base-200/40 transition-all duration-200 shadow-sm flex flex-col gap-2 min-w-0">
   <div class="flex items-center justify-between">
     <span class="font-bold text-sm text-base-content">{tool.name}</span>
     <span

@@ -14,7 +14,7 @@
       <h2 class="card-title text-lg font-bold tracking-tight text-base-content">{t.jobs}</h2>
       <span class="badge badge-neutral badge-sm font-semibold">{jobs.length}</span>
     </div>
-    <div class="space-y-3 max-h-[320px] overflow-y-auto pr-1">
+    <div class="space-y-3 max-h-80 overflow-y-auto pr-1">
       {#each jobs as job}
         <JobItem
           {job}

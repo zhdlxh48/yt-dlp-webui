@@ -23,35 +23,33 @@
         <table class="table table-zebra table-md w-full">
           <thead>
             <tr class="bg-base-200/50 text-base-content/70">
-              <th>파일명</th>
-              <th class="w-24">크기</th>
-              <th class="w-48">다운로드 일시</th>
-              <th>저장 경로</th>
+              <th class="min-w-[150px]">파일명</th>
+              <th class="w-24 whitespace-nowrap">크기</th>
+              <th class="w-48 whitespace-nowrap">다운로드 일시</th>
+              <th class="min-w-[180px]">저장 경로</th>
             </tr>
           </thead>
           <tbody>
             {#each files as file}
               <tr class="hover:bg-base-200/40 transition-colors align-middle">
-                <td>
+                <td class="max-w-[150px] sm:max-w-xs md:max-w-md">
                   <div class="flex items-center gap-2.5">
                     <FileVideo size={16} class="text-primary shrink-0" />
-                    <span class="font-medium truncate max-w-md block" title={file.name}>
+                    <span class="font-medium truncate block" title={file.name}>
                       {file.name}
                     </span>
                   </div>
                 </td>
-                <td>
-                  <span class="badge badge-neutral badge-sm font-mono font-semibold">
-                    {formatSize(file.size)}
-                  </span>
+                <td class="w-24 whitespace-nowrap font-mono text-sm font-medium">
+                  {formatSize(file.size)}
                 </td>
-                <td class="text-xs opacity-75">
+                <td class="w-48 whitespace-nowrap text-xs opacity-75">
                   <div class="flex items-center gap-1.5 font-mono">
                     <Clock size={12} class="opacity-60" />
                     {new Date(file.modified_at).toLocaleString('ko-KR')}
                   </div>
                 </td>
-                <td class="max-w-[280px] truncate font-mono text-xs opacity-60" title={file.path}>
+                <td class="max-w-[180px] md:max-w-xs truncate font-mono text-xs opacity-60" title={file.path}>
                   <div class="flex items-center gap-1.5">
                     <HardDrive size={12} class="opacity-60 shrink-0" />
                     <span class="truncate">{file.path}</span>
