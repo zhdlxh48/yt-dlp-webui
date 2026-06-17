@@ -5,9 +5,9 @@
 
   export let job: JobInfo
   export let isRunning: boolean
+  export let onStop: (id: string, force: boolean) => Promise<void>
 
-  // 부모 콜백 함수
-  export let onStop: (id: string) => Promise<void>
+  $: isStopping = job.status === 'stopping'
 </script>
 
 <div class="rounded-xl border border-base-200 p-3.5 bg-base-200/20 hover:bg-base-200/50 hover:border-base-300/80 transition-all duration-200 shadow-sm flex flex-col gap-2">
@@ -25,13 +25,27 @@
       {job.status}
     </span>
   </div>
-  
+
   <div class="flex items-center justify-between text-xs mt-1">
     <span class="opacity-70 font-medium tracking-wide capitalize">{job.kind}</span>
     {#if isRunning}
-      <button class="btn btn-xs btn-error btn-outline gap-1" on:click={() => onStop(job.id)}>
-        <Square size={10} class="fill-current" /> {t.stop}
-      </button>
+      <div class="flex items-center gap-1.5">
+        <button
+          class="btn btn-xs btn-error btn-outline gap-1"
+          disabled={isStopping}
+          on:click={() => onStop(job.id, false)}
+          title="ffmpeg 병합을 기다리는 안전 종료"
+        >
+          <Square size={10} class="fill-current" /> {t.stop}
+        </button>
+        <button
+          class="btn btn-xs btn-error gap-1"
+          on:click={() => onStop(job.id, true)}
+          title="프로세스 트리를 즉시 종료"
+        >
+          <Square size={10} class="fill-current" /> {t.forceStop}
+        </button>
+      </div>
     {/if}
   </div>
 </div>

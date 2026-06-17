@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { LiveChannel, JobInfo } from '@/types'
+  import type { JobInfo, LiveChannel } from '@/types'
   import { formatYoutubeHandle } from '@/utils/youtube'
 
   export let channel: LiveChannel
@@ -8,29 +8,26 @@
   export let installedCount: number
   export let isEditing: boolean
 
-  // 부모 콜백 함수
   export let onSaveEdit: (id: string, name: string, handle: string, enabled: boolean) => Promise<void>
   export let onCancelEdit: () => void
   export let onStartEdit: (channel: LiveChannel) => void
   export let onDelete: (id: string) => Promise<void>
-  export let onToggleMonitoring: (channel: LiveChannel) => Promise<void>
+  export let onToggleMonitoring: (channel: LiveChannel, force?: boolean) => Promise<void>
 
-  // 수정 중인 임시 로컬 상태
   let editName = ''
   let editHandle = ''
   let editEnabled = true
 
-  // 수정 모드가 활성화되면 값을 동기화합니다.
   $: if (isEditing) {
     editName = channel.name
     editHandle = channel.handle || ''
     editEnabled = channel.enabled
   }
 
-  // 이 채널에 대해 활성화된 작업(모니터링)이 있는지 확인합니다.
   $: activeJob = jobs.find(
     (job) => job.channel_id === channel.id && ['starting', 'running', 'stopping'].includes(job.status)
   )
+  $: isStopping = activeJob?.status === 'stopping'
 
   async function handleSave() {
     const handle = formatYoutubeHandle(editHandle)
@@ -67,25 +64,48 @@
     </td>
     <td>
       {#if activeJob}
-        <span class="badge badge-success badge-sm gap-1.5 font-bold animate-pulse text-success-content border-none shadow-sm shadow-success/25">
-          <span class="size-1.5 rounded-full bg-white"></span>
-          녹화 중
+        <span
+          class="badge badge-sm gap-1.5 font-bold border-none shadow-sm"
+          class:badge-success={!isStopping}
+          class:badge-warning={isStopping}
+          class:animate-pulse={!isStopping}
+        >
+          <span class="size-1.5 rounded-full bg-current"></span>
+          {isStopping ? '종료 중' : '녹화 중'}
         </span>
       {:else}
         <span class="badge badge-ghost badge-sm opacity-60 text-xs font-medium">대기</span>
       {/if}
     </td>
     <td class="text-right space-x-1.5">
-      <button
-        class="btn btn-sm transition-all duration-200 shadow-sm"
-        class:btn-primary={!activeJob}
-        class:btn-error={activeJob}
-        class:btn-outline={!activeJob}
-        disabled={busy || installedCount < 1}
-        on:click={() => onToggleMonitoring(channel)}
-      >
-        {activeJob ? '정지' : '감시'}
-      </button>
+      {#if activeJob}
+        <div class="inline-flex gap-1">
+          <button
+            class="btn btn-xs btn-error btn-outline shadow-sm"
+            disabled={busy || installedCount < 1 || isStopping}
+            on:click={() => onToggleMonitoring(channel, false)}
+            title="ffmpeg 병합을 기다리는 안전 종료"
+          >
+            종료
+          </button>
+          <button
+            class="btn btn-xs btn-error shadow-sm"
+            disabled={busy || installedCount < 1}
+            on:click={() => onToggleMonitoring(channel, true)}
+            title="프로세스 트리를 즉시 종료"
+          >
+            강제 종료
+          </button>
+        </div>
+      {:else}
+        <button
+          class="btn btn-sm btn-outline btn-primary transition-all duration-200 shadow-sm"
+          disabled={busy || installedCount < 1}
+          on:click={() => onToggleMonitoring(channel, false)}
+        >
+          감시
+        </button>
+      {/if}
       <button
         class="btn btn-sm btn-ghost hover:bg-base-200/80"
         disabled={busy || !!activeJob}

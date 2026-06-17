@@ -30,6 +30,6 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ url }),
     }),
-  stopJob: (id: string) => request<JobInfo>(`/api/jobs/${id}/stop`, { method: 'POST' }),
+  stopJob: (id: string, force: boolean = false) => request<JobInfo>(`/api/jobs/${id}/stop?force=${force}`, { method: 'POST' }),
   files: () => request<FileInfo[]>('/api/files'),
 }

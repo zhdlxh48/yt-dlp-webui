@@ -1,20 +1,16 @@
 <script lang="ts">
   import { onMount } from 'svelte'
+  import { Menu } from '@lucide/svelte'
   import { api } from '@/api/client'
   import type { FileInfo, JobInfo, LiveChannel, Settings, ToolStatus } from '@/types'
-  import { connected, connectEvents, logs, events } from '@/stores/events'
-
-  // 레이아웃 및 뷰 컴포넌트 임포트
+  import { connected, connectEvents, events, jobProgress, logs } from '@/stores/events'
   import Sidebar from '@/components/layout/Sidebar.svelte'
-  import { Menu } from '@lucide/svelte'
-  import ChannelList from '@/components/dashboard/ChannelList.svelte'
-  import GeneralDownload from '@/components/dashboard/GeneralDownload.svelte'
-  import JobList from '@/components/dashboard/JobList.svelte'
-  import LogConsole from '@/components/dashboard/LogConsole.svelte'
+  import Dashboard from '@/components/dashboard/Dashboard.svelte'
   import SettingsForm from '@/components/settings/SettingsForm.svelte'
   import ToolsStatus from '@/components/settings/ToolsStatus.svelte'
   import FileList from '@/components/files/FileList.svelte'
   import ToolsModal from '@/components/common/ToolsModal.svelte'
+  import LogConsole from '@/components/dashboard/LogConsole.svelte'
 
   let settings: Settings | null = null
   let tools: ToolStatus = { tools: [] }
@@ -23,7 +19,7 @@
   let activeTab: 'dashboard' | 'settings' | 'files' = 'dashboard'
   let busy = false
   let errorMessage = ''
-  let downloadPercents: Record<string, number> = { 'yt-dlp': 0, 'ffmpeg': 0, 'deno': 0 }
+  let downloadPercents: Record<string, number> = { 'yt-dlp': 0, ffmpeg: 0, deno: 0 }
   let drawerChecked = false
 
   $: if (activeTab) {
@@ -83,7 +79,7 @@
   }
 
   async function installTools(force = false) {
-    downloadPercents = { 'yt-dlp': 0, 'ffmpeg': 0, 'deno': 0 }
+    downloadPercents = { 'yt-dlp': 0, ffmpeg: 0, deno: 0 }
     await withBusy(async () => {
       tools = await api.installTools(force)
     })
@@ -111,9 +107,9 @@
     })
   }
 
-  async function stopJob(id: string) {
+  async function stopJob(id: string, force = false) {
     await withBusy(async () => {
-      await api.stopJob(id)
+      await api.stopJob(id, force)
       jobs = await api.jobs()
     })
   }
@@ -126,7 +122,6 @@
     })
   }
 
-  // 라이브 채널 추가
   async function handleAddChannel(name: string, handle: string) {
     if (!settings) return
     const channel: LiveChannel = {
@@ -141,40 +136,37 @@
     await saveSettings()
   }
 
-  // 라이브 채널 수정
   async function handleEditChannel(id: string, name: string, handle: string, enabled: boolean) {
     if (!settings) return
-    settings.live.channels = settings.live.channels.map((c) => {
-      if (c.id === id) {
+    settings.live.channels = settings.live.channels.map((channel) => {
+      if (channel.id === id) {
         return {
-          ...c,
+          ...channel,
           name,
           handle,
           url: `https://www.youtube.com/${handle}/live`,
           enabled,
         }
       }
-      return c
+      return channel
     })
     settings = settings
     await saveSettings()
   }
 
-  // 라이브 채널 삭제
   async function handleDeleteChannel(id: string) {
     if (!settings) return
-    settings.live.channels = settings.live.channels.filter((c) => c.id !== id)
+    settings.live.channels = settings.live.channels.filter((channel) => channel.id !== id)
     settings = settings
     await saveSettings()
   }
 
-  // 개별 채널 모니터링/정지 제어
-  async function handleToggleChannelMonitoring(channel: LiveChannel) {
+  async function handleToggleChannelMonitoring(channel: LiveChannel, force = false) {
     const activeJob = jobs.find(
       (job) => job.channel_id === channel.id && ['starting', 'running', 'stopping'].includes(job.status)
     )
     if (activeJob) {
-      await stopJob(activeJob.id)
+      await stopJob(activeJob.id, force)
     } else {
       await startLive([channel.id])
     }
@@ -183,14 +175,14 @@
   $: runningJobs = jobs.filter((job) => ['starting', 'running', 'stopping'].includes(job.status))
   $: installedCount = tools.tools.filter((tool) => tool.installed).length
   $: toolMessage = (() => {
-    const statusEvent = $events.find((e) => e.type === 'tools.status')
+    const statusEvent = $events.find((event) => event.type === 'tools.status')
     if (statusEvent && typeof statusEvent.payload === 'object' && statusEvent.payload !== null) {
       const payload = statusEvent.payload as any
       return payload.message || ''
     }
     return ''
   })()
-  $: hasMissingTools = tools.tools.length > 0 && tools.tools.some((t) => !t.installed)
+  $: hasMissingTools = tools.tools.length > 0 && tools.tools.some((tool) => !tool.installed)
 </script>
 
 <svelte:head>
@@ -201,7 +193,6 @@
   <input id="app-drawer" type="checkbox" class="drawer-toggle" bind:checked={drawerChecked} />
 
   <div class="drawer-content flex flex-col min-h-screen">
-    <!-- Mobile Navigation Topbar -->
     <header class="navbar bg-base-100 border-b border-base-200/50 px-4 flex justify-between lg:hidden sticky top-0 z-30 shadow-sm">
       <div class="flex-none">
         <label for="app-drawer" class="btn btn-ghost btn-square drawer-button">
@@ -215,7 +206,6 @@
       </div>
     </header>
 
-    <!-- Main Content Area -->
     <main class="flex-1 p-4 lg:p-6 w-full space-y-6">
       {#if errorMessage}
         <div class="alert alert-error shadow-sm border border-error/20">
@@ -224,27 +214,20 @@
       {/if}
 
       {#if activeTab === 'dashboard'}
-        <section class="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-          <div class="space-y-6">
-            <ChannelList
-              {settings}
-              {jobs}
-              {busy}
-              {installedCount}
-              onStartLive={() => startLive()}
-              onAddChannel={handleAddChannel}
-              onEditChannel={handleEditChannel}
-              onDeleteChannel={handleDeleteChannel}
-              onToggleMonitoring={handleToggleChannelMonitoring}
-            />
-            <GeneralDownload {busy} onDownload={startDownload} />
-          </div>
-
-          <aside class="space-y-6">
-            <JobList {jobs} {runningJobs} onStopJob={stopJob} />
-            <LogConsole logs={$logs} />
-          </aside>
-        </section>
+        <Dashboard
+          {settings}
+          {jobs}
+          progressItems={$jobProgress}
+          {busy}
+          {installedCount}
+          onStartLive={() => startLive()}
+          onAddChannel={handleAddChannel}
+          onEditChannel={handleEditChannel}
+          onDeleteChannel={handleDeleteChannel}
+          onToggleMonitoring={handleToggleChannelMonitoring}
+          onDownload={startDownload}
+          onStopJob={stopJob}
+        />
       {/if}
 
       {#if activeTab === 'settings' && settings}
@@ -270,7 +253,6 @@
     </main>
   </div>
 
-  <!-- Responsive Sidebar -->
   <div class="drawer-side z-40">
     <label for="app-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
     <Sidebar
@@ -290,3 +272,5 @@
     onInstallTools={installTools}
   />
 {/if}
+
+<LogConsole logs={$logs} />

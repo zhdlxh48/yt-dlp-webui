@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Play } from '@lucide/svelte'
-  import type { Settings, JobInfo, LiveChannel } from '@/types'
+  import type { JobInfo, LiveChannel, Settings } from '@/types'
   import { ko as t } from '@/i18n/ko'
   import { formatYoutubeHandle } from '@/utils/youtube'
   import ChannelRow from './ChannelRow.svelte'
@@ -10,14 +10,12 @@
   export let busy: boolean
   export let installedCount: number
 
-  // 부모 콜백
   export let onStartLive: () => Promise<void>
   export let onAddChannel: (name: string, handle: string) => Promise<void>
   export let onEditChannel: (id: string, name: string, handle: string, enabled: boolean) => Promise<void>
   export let onDeleteChannel: (id: string) => Promise<void>
-  export let onToggleMonitoring: (channel: LiveChannel) => Promise<void>
+  export let onToggleMonitoring: (channel: LiveChannel, force?: boolean) => Promise<void>
 
-  // 추가 및 편집을 위한 로컬 상태
   let isAdding = false
   let newName = ''
   let newHandle = ''

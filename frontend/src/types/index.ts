@@ -81,6 +81,7 @@ export type AppEvent = {
     | 'app.status'
     | 'job.started'
     | 'job.progress'
+    | 'job.progress_line'
     | 'job.log'
     | 'job.finished'
     | 'job.error'
@@ -89,4 +90,24 @@ export type AppEvent = {
     | 'system.log'
   payload: Record<string, unknown>
   timestamp: string
+}
+
+export type LogEntry = {
+  id: string
+  line: string
+}
+
+export type JobProgress = {
+  jobId: string
+  streamId: string
+  title: string
+  line: string
+  percent: number | null
+  speed: string
+  eta: string
+  downloaded: string
+  elapsed: string
+  fragment: number | null
+  fragmentTotal: number | null
+  updatedAt: string
 }

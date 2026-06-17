@@ -5,9 +5,7 @@
 
   export let jobs: JobInfo[]
   export let runningJobs: JobInfo[]
-
-  // 부모 콜백 함수
-  export let onStopJob: (id: string) => Promise<void>
+  export let onStopJob: (id: string, force: boolean) => Promise<void>
 </script>
 
 <div class="card bg-base-100 border border-base-200/50 shadow-sm transition-all duration-200 hover:shadow-md">
