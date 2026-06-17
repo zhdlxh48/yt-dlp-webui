@@ -1,18 +1,17 @@
-name: build-and-release
+name: Release
 
 on:
   push:
-    branches: [main]
-    tags: ["v*.*.*"]
-  workflow_dispatch:
+    tags:
+      - 'v*'
 
 permissions:
   contents: write
 
 jobs:
   windows:
+    name: Windows release
     runs-on: windows-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v5
