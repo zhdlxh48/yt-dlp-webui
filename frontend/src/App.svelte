@@ -246,7 +246,7 @@
           {/if}
 
           {#if activeTab === 'settings' && settings}
-            <section class="grid gap-6 lg:grid-cols-[1.25fr_0.75fr] w-full items-start">
+            <section class="flex flex-col gap-6 w-full">
               <SettingsForm bind:settings {busy} onSave={saveSettings} />
               <ToolsStatus
                 {tools}
