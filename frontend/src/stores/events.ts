@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store'
-import type { AppEvent } from '../api/types'
+import type { AppEvent } from '@/types'
 
 export const connected = writable(false)
 export const events = writable<AppEvent[]>([])
@@ -23,4 +23,3 @@ export function connectEvents(): void {
     }
   })
 }
-

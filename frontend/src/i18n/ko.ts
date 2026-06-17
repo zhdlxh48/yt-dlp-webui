@@ -22,4 +22,3 @@ export const ko = {
   websocketOnline: '실시간 연결',
   websocketOffline: '연결 대기',
 }
-

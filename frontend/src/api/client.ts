@@ -1,4 +1,4 @@
-import type { FileInfo, JobInfo, Settings, ToolStatus } from './types'
+import type { FileInfo, JobInfo, Settings, ToolStatus } from '@/types'
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, {
@@ -33,4 +33,3 @@ export const api = {
   stopJob: (id: string) => request<JobInfo>(`/api/jobs/${id}/stop`, { method: 'POST' }),
   files: () => request<FileInfo[]>('/api/files'),
 }
-

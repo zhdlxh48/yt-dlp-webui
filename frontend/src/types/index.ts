@@ -90,4 +90,3 @@ export type AppEvent = {
   payload: Record<string, unknown>
   timestamp: string
 }
-
