@@ -1,6 +1,6 @@
 @import "tailwindcss";
 @plugin "daisyui" {
-  themes: corporate --default, night --prefersdark;
+  themes: light --default, dark --prefersdark, cupcake, retro, synthwave, forest, coffee, abyss, sunset;
 }
 
 html {
@@ -10,6 +10,31 @@ html {
 body {
   margin: 0;
   min-width: 320px;
+}
+
+/* 브라우저 기본 inset/outset 테두리 및 네이티브 스타일, 기본 그림자(내부 섀도우)로 인해 둥근 입력창 바깥에 사각형 잔상이 보이는 현상 해결 */
+input.input,
+textarea.textarea,
+select.select {
+  border-style: solid !important;
+  outline: none !important;
+  box-shadow: none !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background-clip: padding-box !important;
+}
+
+/* join 컨테이너 내부 아이템들이 라운드 밖으로 삐져나와 사각형 잔상이 보이는 현상을 근본적으로 클리핑 */
+.join {
+  overflow: hidden !important;
+}
+
+input,
+textarea,
+select,
+button {
+  border-style: solid;
+  outline: none;
 }
 
 button,

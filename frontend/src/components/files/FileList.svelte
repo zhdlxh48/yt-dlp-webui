@@ -2,36 +2,70 @@
   import type { FileInfo } from '@/types'
   import { ko as t } from '@/i18n/ko'
   import { formatSize } from '@/utils/format'
+  import { FileVideo, Clock, HardDrive } from '@lucide/svelte'
 
   export let files: FileInfo[]
 </script>
 
-<div class="rounded-box bg-base-100 p-4 shadow-sm">
-  <h2 class="mb-3 text-base font-semibold">{t.files}</h2>
-  <div class="overflow-x-auto">
-    <table class="table table-sm">
-      <thead>
-        <tr>
-          <th>파일</th>
-          <th>크기</th>
-          <th>수정</th>
-          <th>경로</th>
-        </tr>
-      </thead>
-      <tbody>
-        {#each files as file}
-          <tr>
-            <td>{file.name}</td>
-            <td>{formatSize(file.size)}</td>
-            <td>{new Date(file.modified_at).toLocaleString()}</td>
-            <td class="max-w-[360px] truncate" title={file.path}>{file.path}</td>
-          </tr>
-        {:else}
-          <tr>
-            <td colspan="4" class="opacity-70">파일 없음</td>
-          </tr>
-        {/each}
-      </tbody>
-    </table>
+<div class="card bg-base-100 border border-base-200/50 shadow-sm transition-all duration-200 hover:shadow-md">
+  <div class="card-body p-5 lg:p-6">
+    <div class="flex items-center justify-between border-b border-base-200/60 pb-3 mb-4">
+      <div class="flex items-center gap-2">
+        <h2 class="card-title text-lg font-bold tracking-tight text-base-content">{t.files}</h2>
+        <span class="badge badge-neutral badge-sm font-semibold">{files.length}</span>
+      </div>
+    </div>
+
+    <p class="text-sm opacity-70 mb-4">다운로드 완료 폴더 내에 저장된 녹화 및 비디오 파일 목록입니다.</p>
+
+    {#if files.length > 0}
+      <div class="overflow-x-auto rounded-lg border border-base-200/60">
+        <table class="table table-zebra table-md w-full">
+          <thead>
+            <tr class="bg-base-200/50 text-base-content/70">
+              <th>파일명</th>
+              <th class="w-24">크기</th>
+              <th class="w-48">다운로드 일시</th>
+              <th>저장 경로</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each files as file}
+              <tr class="hover:bg-base-200/40 transition-colors align-middle">
+                <td>
+                  <div class="flex items-center gap-2.5">
+                    <FileVideo size={16} class="text-primary shrink-0" />
+                    <span class="font-medium truncate max-w-md block" title={file.name}>
+                      {file.name}
+                    </span>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge badge-neutral badge-sm font-mono font-semibold">
+                    {formatSize(file.size)}
+                  </span>
+                </td>
+                <td class="text-xs opacity-75">
+                  <div class="flex items-center gap-1.5 font-mono">
+                    <Clock size={12} class="opacity-60" />
+                    {new Date(file.modified_at).toLocaleString('ko-KR')}
+                  </div>
+                </td>
+                <td class="max-w-[280px] truncate font-mono text-xs opacity-60" title={file.path}>
+                  <div class="flex items-center gap-1.5">
+                    <HardDrive size={12} class="opacity-60 shrink-0" />
+                    <span class="truncate">{file.path}</span>
+                  </div>
+                </td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+    {:else}
+      <div class="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-base-300 p-12 text-center bg-base-50/20">
+        <p class="text-sm text-base-content/50">다운로드된 파일이 아직 존재하지 않습니다.</p>
+      </div>
+    {/if}
   </div>
 </div>

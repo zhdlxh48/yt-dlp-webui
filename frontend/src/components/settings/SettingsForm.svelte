@@ -10,47 +10,101 @@
   export let onSave: () => Promise<void>
 </script>
 
-<div class="rounded-box bg-base-100 p-4 shadow-sm">
-  <div class="mb-3 flex items-center justify-between">
-    <h2 class="text-base font-semibold">{t.settings}</h2>
-    <button class="btn btn-sm btn-primary" disabled={busy} on:click={onSave}>
-      <Save size={16} /> {t.save}
-    </button>
-  </div>
-  <div class="grid gap-3">
-    <label class="form-control">
-      <span class="label-text">{t.downloadsDir}</span>
-      <input class="input input-bordered" bind:value={settings.paths.downloads_dir} />
-    </label>
-    <label class="form-control">
-      <span class="label-text">cookies.txt</span>
-      <input class="input input-bordered" bind:value={settings.auth.cookies_file} />
-    </label>
-    <label class="form-control">
-      <span class="label-text">Format</span>
-      <input class="input input-bordered" bind:value={settings.download.format_selector} />
-    </label>
-    <label class="form-control">
-      <span class="label-text">Extra yt-dlp args</span>
-      <textarea class="textarea textarea-bordered min-h-24" bind:value={settings.download.extra_args}></textarea>
-    </label>
-    <div class="grid gap-2 md:grid-cols-2">
-      <label class="label cursor-pointer justify-start gap-3">
-        <input class="toggle toggle-primary" type="checkbox" bind:checked={settings.app.open_browser_on_start} />
-        <span class="label-text">시작 시 브라우저 열기</span>
-      </label>
-      <label class="label cursor-pointer justify-start gap-3">
-        <input class="toggle toggle-primary" type="checkbox" bind:checked={settings.app.start_monitoring_on_launch} />
-        <span class="label-text">앱 시작 시 감시</span>
-      </label>
-      <label class="label cursor-pointer justify-start gap-3">
-        <input class="toggle toggle-primary" type="checkbox" bind:checked={settings.tools.auto_install_tools} />
-        <span class="label-text">도구 자동 설치</span>
-      </label>
-      <label class="label cursor-pointer justify-start gap-3">
-        <input class="toggle toggle-primary" type="checkbox" bind:checked={settings.startup.enabled} />
-        <span class="label-text">로그인 시 자동 실행</span>
-      </label>
+<div class="card bg-base-100 border border-base-200/50 shadow-sm transition-all duration-200 hover:shadow-md">
+  <div class="card-body p-5 lg:p-6">
+    <div class="flex items-center justify-between border-b border-base-200/60 pb-3 mb-6">
+      <h2 class="card-title text-lg font-bold tracking-tight text-base-content">{t.settings}</h2>
+      <button class="btn btn-sm btn-primary gap-1.5 font-semibold shadow-sm" disabled={busy} on:click={onSave}>
+        {#if busy}
+          <span class="loading loading-spinner loading-xs"></span>
+        {:else}
+          <Save size={14} />
+        {/if}
+        {t.save}
+      </button>
+    </div>
+
+    <div class="space-y-6">
+      <!-- Section 1: Paths & Authentication -->
+      <div>
+        <h3 class="text-sm font-extrabold tracking-tight text-base-content border-l-4 border-primary pl-3 mb-4 uppercase">
+          경로 및 인증 설정
+        </h3>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <label class="form-control w-full">
+            <span class="label-text font-semibold text-base-content/80 mb-1">{t.downloadsDir}</span>
+            <input class="input input-bordered w-full focus:input-primary text-sm font-mono" bind:value={settings.paths.downloads_dir} placeholder="C:\downloads" />
+          </label>
+          <label class="form-control w-full">
+            <span class="label-text font-semibold text-base-content/80 mb-1">cookies.txt 파일 경로</span>
+            <input class="input input-bordered w-full focus:input-primary text-sm font-mono" bind:value={settings.auth.cookies_file} placeholder="선택 사항" />
+          </label>
+        </div>
+      </div>
+
+      <div class="divider my-1"></div>
+
+      <!-- Section 2: Download Options -->
+      <div>
+        <h3 class="text-sm font-extrabold tracking-tight text-base-content border-l-4 border-primary pl-3 mb-4 uppercase">
+          다운로드 상세 설정
+        </h3>
+        <div class="space-y-4">
+          <label class="form-control w-full">
+            <span class="label-text font-semibold text-base-content/80 mb-1">yt-dlp 포맷 셀렉터</span>
+            <input class="input input-bordered w-full focus:input-primary text-sm font-mono" bind:value={settings.download.format_selector} />
+            <div class="label py-1">
+              <span class="label-text-alt opacity-65">기본값: bestvideo+bestaudio/best</span>
+            </div>
+          </label>
+          <label class="form-control w-full">
+            <span class="label-text font-semibold text-base-content/80 mb-1">yt-dlp 추가 아규먼트 (줄바꿈 구분)</span>
+            <textarea class="textarea textarea-bordered focus:textarea-primary text-sm font-mono min-h-24 w-full" bind:value={settings.download.extra_args} placeholder="--no-part&#10;--no-mtime"></textarea>
+          </label>
+        </div>
+      </div>
+
+      <div class="divider my-1"></div>
+
+      <!-- Section 3: App Behavior -->
+      <div>
+        <h3 class="text-sm font-extrabold tracking-tight text-base-content border-l-4 border-primary pl-3 mb-4 uppercase">
+          애플리케이션 환경 설정
+        </h3>
+        <div class="grid gap-3 sm:grid-cols-2">
+          <label class="label cursor-pointer justify-start gap-4 rounded-xl border border-base-200/50 hover:bg-base-200/20 p-3 transition-colors">
+            <input class="toggle toggle-primary toggle-sm" type="checkbox" bind:checked={settings.app.open_browser_on_start} />
+            <div class="flex flex-col">
+              <span class="label-text font-semibold">시작 시 브라우저 열기</span>
+              <span class="text-xs opacity-60 mt-0.5">서버 구동 시 WebUI 화면을 브라우저에 표시합니다.</span>
+            </div>
+          </label>
+
+          <label class="label cursor-pointer justify-start gap-4 rounded-xl border border-base-200/50 hover:bg-base-200/20 p-3 transition-colors">
+            <input class="toggle toggle-primary toggle-sm" type="checkbox" bind:checked={settings.app.start_monitoring_on_launch} />
+            <div class="flex flex-col">
+              <span class="label-text font-semibold">앱 시작 시 감시 자동 시작</span>
+              <span class="text-xs opacity-60 mt-0.5">프로그램 실행 시 라이브 모니터링을 자동으로 개시합니다.</span>
+            </div>
+          </label>
+
+          <label class="label cursor-pointer justify-start gap-4 rounded-xl border border-base-200/50 hover:bg-base-200/20 p-3 transition-colors">
+            <input class="toggle toggle-primary toggle-sm" type="checkbox" bind:checked={settings.tools.auto_install_tools} />
+            <div class="flex flex-col">
+              <span class="label-text font-semibold">필수 도구 자동 업데이트</span>
+              <span class="text-xs opacity-60 mt-0.5">필요 시 도구를 백그라운드에서 자동 설치합니다.</span>
+            </div>
+          </label>
+
+          <label class="label cursor-pointer justify-start gap-4 rounded-xl border border-base-200/50 hover:bg-base-200/20 p-3 transition-colors">
+            <input class="toggle toggle-primary toggle-sm" type="checkbox" bind:checked={settings.startup.enabled} />
+            <div class="flex flex-col">
+              <span class="label-text font-semibold">윈도우 시작 시 자동 실행</span>
+              <span class="text-xs opacity-60 mt-0.5">윈도우 로그인 시 트레이 앱으로 즉시 자동 구동합니다.</span>
+            </div>
+          </label>
+        </div>
+      </div>
     </div>
   </div>
 </div>

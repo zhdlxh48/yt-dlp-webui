@@ -40,60 +40,61 @@
 </script>
 
 {#if isEditing}
-  <tr>
+  <tr class="align-middle">
     <td>
-      <input class="input input-xs input-bordered w-full" bind:value={editName} placeholder="채널 이름" />
+      <input class="input input-sm input-bordered w-full font-medium" bind:value={editName} placeholder="채널 이름" />
     </td>
     <td>
-      <input class="input input-xs input-bordered w-full" bind:value={editHandle} placeholder="@handle" />
+      <input class="input input-sm input-bordered w-full font-mono text-xs" bind:value={editHandle} placeholder="@handle" />
     </td>
-    <td>
-      <input type="checkbox" class="checkbox checkbox-xs" bind:checked={editEnabled} />
+    <td class="text-center">
+      <input type="checkbox" class="checkbox checkbox-sm checkbox-primary" bind:checked={editEnabled} />
     </td>
-    <td>-</td>
-    <td class="text-right space-x-1">
-      <button class="btn btn-xs btn-success" disabled={busy} on:click={handleSave}>저장</button>
-      <button class="btn btn-xs btn-ghost" on:click={onCancelEdit}>취소</button>
+    <td><span class="text-xs opacity-40">-</span></td>
+    <td class="text-right space-x-1.5">
+      <button class="btn btn-sm btn-success text-success-content" disabled={busy} on:click={handleSave}>저장</button>
+      <button class="btn btn-sm btn-ghost" on:click={onCancelEdit}>취소</button>
     </td>
   </tr>
 {:else}
-  <tr>
-    <td class="font-medium">{channel.name || '-'}</td>
-    <td class="text-xs opacity-80">{channel.handle || '-'}</td>
+  <tr class="hover:bg-base-200/40 transition-colors align-middle">
+    <td class="font-semibold text-base-content">{channel.name || '-'}</td>
+    <td class="font-mono text-xs opacity-75">{channel.handle || '-'}</td>
     <td>
-      <span class="badge badge-sm" class:badge-success={channel.enabled} class:badge-ghost={!channel.enabled}>
+      <span class="badge badge-sm font-semibold transition-all" class:badge-success={channel.enabled} class:badge-ghost={!channel.enabled} class:opacity-60={!channel.enabled}>
         {channel.enabled ? 'ON' : 'OFF'}
       </span>
     </td>
     <td>
       {#if activeJob}
-        <span class="badge badge-success badge-xs gap-1 animate-pulse">
-          <span class="size-1 rounded-full bg-white"></span>
-          감시 중
+        <span class="badge badge-success badge-sm gap-1.5 font-bold animate-pulse text-success-content border-none shadow-sm shadow-success/25">
+          <span class="size-1.5 rounded-full bg-white"></span>
+          녹화 중
         </span>
       {:else}
-        <span class="opacity-60 text-xs">대기</span>
+        <span class="badge badge-ghost badge-sm opacity-60 text-xs font-medium">대기</span>
       {/if}
     </td>
-    <td class="text-right space-x-1">
+    <td class="text-right space-x-1.5">
       <button
-        class="btn btn-xs"
+        class="btn btn-sm transition-all duration-200 shadow-sm"
         class:btn-primary={!activeJob}
         class:btn-error={activeJob}
+        class:btn-outline={!activeJob}
         disabled={busy || installedCount < 1}
         on:click={() => onToggleMonitoring(channel)}
       >
-        {activeJob ? '정지' : '감시 시작'}
+        {activeJob ? '정지' : '감시'}
       </button>
       <button
-        class="btn btn-xs btn-outline"
+        class="btn btn-sm btn-ghost hover:bg-base-200/80"
         disabled={busy || !!activeJob}
         on:click={() => onStartEdit(channel)}
       >
         수정
       </button>
       <button
-        class="btn btn-xs btn-ghost text-error"
+        class="btn btn-sm btn-ghost text-error hover:bg-error/10"
         disabled={busy || !!activeJob}
         on:click={() => onDelete(channel.id)}
       >

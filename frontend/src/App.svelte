@@ -5,7 +5,8 @@
   import { connected, connectEvents, logs, events } from '@/stores/events'
 
   // 레이아웃 및 뷰 컴포넌트 임포트
-  import Header from '@/components/layout/Header.svelte'
+  import Sidebar from '@/components/layout/Sidebar.svelte'
+  import { Menu } from '@lucide/svelte'
   import ChannelList from '@/components/dashboard/ChannelList.svelte'
   import GeneralDownload from '@/components/dashboard/GeneralDownload.svelte'
   import JobList from '@/components/dashboard/JobList.svelte'
@@ -23,6 +24,11 @@
   let busy = false
   let errorMessage = ''
   let downloadPercents: Record<string, number> = { 'yt-dlp': 0, 'ffmpeg': 0, 'deno': 0 }
+  let drawerChecked = false
+
+  $: if (activeTab) {
+    drawerChecked = false
+  }
 
   onMount(() => {
     connectEvents()
@@ -191,62 +197,90 @@
   <title>yt-dlp webui</title>
 </svelte:head>
 
-<main class="min-h-screen bg-base-200 text-base-content">
-  <div class="mx-auto flex min-h-screen max-w-7xl flex-col px-4 py-4 lg:px-6">
-    <Header bind:activeTab connected={$connected} />
+<div class="drawer lg:drawer-open min-h-screen bg-base-200">
+  <input id="app-drawer" type="checkbox" class="drawer-toggle" bind:checked={drawerChecked} />
 
-    {#if errorMessage}
-      <div class="alert alert-error mt-4">
-        <span>{errorMessage}</span>
+  <div class="drawer-content flex flex-col min-h-screen">
+    <!-- Mobile Navigation Topbar -->
+    <header class="navbar bg-base-100 border-b border-base-200/50 px-4 flex justify-between lg:hidden sticky top-0 z-30 shadow-sm">
+      <div class="flex-none">
+        <label for="app-drawer" class="btn btn-ghost btn-square drawer-button">
+          <Menu size={20} />
+        </label>
       </div>
-    {/if}
+      <div class="flex-1 justify-center pr-8">
+        <span class="text-lg font-bold tracking-tight bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+          yt-dlp webui
+        </span>
+      </div>
+    </header>
 
-    {#if activeTab === 'dashboard'}
-      <section class="grid gap-4 py-4 lg:grid-cols-[1.2fr_0.8fr]">
-        <div class="space-y-4">
-          <ChannelList
-            {settings}
-            {jobs}
-            {busy}
-            {installedCount}
-            onStartLive={() => startLive()}
-            onAddChannel={handleAddChannel}
-            onEditChannel={handleEditChannel}
-            onDeleteChannel={handleDeleteChannel}
-            onToggleMonitoring={handleToggleChannelMonitoring}
-          />
-          <GeneralDownload {busy} onDownload={startDownload} />
+    <!-- Main Content Area -->
+    <main class="flex-1 p-4 lg:p-6 w-full space-y-6">
+      {#if errorMessage}
+        <div class="alert alert-error shadow-sm border border-error/20">
+          <span>{errorMessage}</span>
         </div>
+      {/if}
 
-        <aside class="space-y-4">
-          <JobList {jobs} {runningJobs} onStopJob={stopJob} />
-          <LogConsole logs={$logs} />
-        </aside>
-      </section>
-    {/if}
+      {#if activeTab === 'dashboard'}
+        <section class="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+          <div class="space-y-6">
+            <ChannelList
+              {settings}
+              {jobs}
+              {busy}
+              {installedCount}
+              onStartLive={() => startLive()}
+              onAddChannel={handleAddChannel}
+              onEditChannel={handleEditChannel}
+              onDeleteChannel={handleDeleteChannel}
+              onToggleMonitoring={handleToggleChannelMonitoring}
+            />
+            <GeneralDownload {busy} onDownload={startDownload} />
+          </div>
 
-    {#if activeTab === 'settings' && settings}
-      <section class="py-4 max-w-2xl mx-auto w-full">
-        <SettingsForm bind:settings {busy} onSave={saveSettings} />
-        <ToolsStatus
-          {tools}
-          {busy}
-          {downloadPercents}
-          {toolMessage}
-          hasRunningJobs={runningJobs.length > 0}
-          onOpenToolsFolder={openToolsFolder}
-          onInstallTools={installTools}
-        />
-      </section>
-    {/if}
+          <aside class="space-y-6">
+            <JobList {jobs} {runningJobs} onStopJob={stopJob} />
+            <LogConsole logs={$logs} />
+          </aside>
+        </section>
+      {/if}
 
-    {#if activeTab === 'files'}
-      <section class="py-4">
-        <FileList {files} />
-      </section>
-    {/if}
+      {#if activeTab === 'settings' && settings}
+        <section class="grid gap-6 lg:grid-cols-[1.25fr_0.75fr] w-full items-start">
+          <SettingsForm bind:settings {busy} onSave={saveSettings} />
+          <ToolsStatus
+            {tools}
+            {busy}
+            {downloadPercents}
+            {toolMessage}
+            hasRunningJobs={runningJobs.length > 0}
+            onOpenToolsFolder={openToolsFolder}
+            onInstallTools={installTools}
+          />
+        </section>
+      {/if}
+
+      {#if activeTab === 'files'}
+        <section>
+          <FileList {files} />
+        </section>
+      {/if}
+    </main>
   </div>
-</main>
+
+  <!-- Responsive Sidebar -->
+  <div class="drawer-side z-40">
+    <label for="app-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
+    <Sidebar
+      bind:activeTab
+      connected={$connected}
+      runningJobsCount={runningJobs.length}
+      channelsCount={settings?.live.channels.length || 0}
+    />
+  </div>
+</div>
 
 {#if hasMissingTools}
   <ToolsModal
