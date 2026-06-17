@@ -4,7 +4,7 @@
 }
 
 html {
-  scrollbar-gutter: stable;
+  /* scrollbar-gutter: stable; */
 }
 
 body {
@@ -12,29 +12,9 @@ body {
   min-width: 320px;
 }
 
-/* 브라우저 기본 inset/outset 테두리 및 네이티브 스타일, 기본 그림자(내부 섀도우)로 인해 둥근 입력창 바깥에 사각형 잔상이 보이는 현상 해결 */
-input.input,
-textarea.textarea,
-select.select {
-  border-style: solid !important;
-  outline: none !important;
-  box-shadow: none !important;
-  appearance: none !important;
-  -webkit-appearance: none !important;
-  background-clip: padding-box !important;
-}
-
 /* join 컨테이너 내부 아이템들이 라운드 밖으로 삐져나와 사각형 잔상이 보이는 현상을 근본적으로 클리핑 */
 .join {
-  overflow: hidden !important;
-}
-
-input,
-textarea,
-select,
-button {
-  border-style: solid;
-  outline: none;
+  overflow: hidden;
 }
 
 button,
@@ -48,4 +28,52 @@ textarea {
   overflow-wrap: anywhere;
   word-break: break-word;
 }
+
+/* 테마 선택기 프리뷰 스타일 강제 정의 */
+.theme-preview-light {
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+  border-color: rgba(0,0,0,0.12) !important;
+}
+.theme-preview-dark {
+  background-color: #1d232a !important;
+  color: #a6adbb !important;
+  border-color: rgba(255,255,255,0.15) !important;
+}
+.theme-preview-cupcake {
+  background-color: #faf7f5 !important;
+  color: #291334 !important;
+  border-color: rgba(0,0,0,0.12) !important;
+}
+.theme-preview-retro {
+  background-color: #ece3ca !important;
+  color: #282425 !important;
+  border-color: rgba(0,0,0,0.12) !important;
+}
+.theme-preview-synthwave {
+  background-color: #1a103c !important;
+  color: #a6adbb !important;
+  border-color: rgba(255,255,255,0.15) !important;
+}
+.theme-preview-forest {
+  background-color: #171212 !important;
+  color: #a6adbb !important;
+  border-color: rgba(255,255,255,0.15) !important;
+}
+.theme-preview-coffee {
+  background-color: #20161f !important;
+  color: #a6adbb !important;
+  border-color: rgba(255,255,255,0.15) !important;
+}
+.theme-preview-abyss {
+  background-color: #0f172a !important;
+  color: #a6adbb !important;
+  border-color: rgba(255,255,255,0.15) !important;
+}
+.theme-preview-sunset {
+  background-color: #120e16 !important;
+  color: #a6adbb !important;
+  border-color: rgba(255,255,255,0.15) !important;
+}
+
 

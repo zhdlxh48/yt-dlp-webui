@@ -117,12 +117,10 @@
       >
         {#each themes as theme}
           <button
-            class="flex flex-col items-stretch p-2.5 rounded-lg border transition-all duration-200 text-left gap-1.5 cursor-pointer shadow-xs w-full"
-            style="background-color: {theme.background}; color: {theme.text}; border-color: {theme.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)'}"
+            class="flex flex-col items-stretch p-2.5 rounded-lg border transition-all duration-200 text-left gap-1.5 cursor-pointer shadow-xs w-full theme-preview-{theme.name}"
             class:ring-2={$activeTheme === theme.name}
             class:ring-primary={$activeTheme === theme.name}
             class:ring-offset-1={$activeTheme === theme.name}
-            data-theme={theme.name}
             on:click={() => {
               activeTheme.set(theme.name)
               dropdownOpen = false
