@@ -46,3 +46,13 @@ class EventBus:
                 for client in stale:
                     self._clients.discard(client)
 
+    async def publish_log(self, message: str, level: str = "info") -> None:
+        import logging
+        logger = logging.getLogger("ytdlp_webui")
+        getattr(logger, level.lower())(message)
+        await self.publish(
+            "system.log",
+            {"line": f"[{datetime.now(UTC).strftime('%H:%M:%S')}] {message}"},
+        )
+
+
