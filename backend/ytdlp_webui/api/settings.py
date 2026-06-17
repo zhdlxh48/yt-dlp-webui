@@ -34,4 +34,5 @@ async def put_settings(
     else:
         autostart.disable()
     await events.publish("settings.updated", settings.model_dump())
+    await events.publish_log("설정이 업데이트되었습니다.")
     return settings

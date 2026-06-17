@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Literal
 from uuid import uuid4
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 class AppConfig(BaseModel):
@@ -28,15 +28,26 @@ class ToolsConfig(BaseModel):
 class LiveChannel(BaseModel):
     id: str = Field(default_factory=lambda: uuid4().hex)
     name: str = ""
-    url: str
+    handle: str = ""
+    url: str = ""
     enabled: bool = True
 
-    @field_validator("url")
+    @field_validator("handle")
     @classmethod
-    def url_must_not_be_empty(cls, value: str) -> str:
-        if not value.strip():
-            raise ValueError("URL is required")
-        return value.strip()
+    def handle_format(cls, value: str) -> str:
+        val = value.strip()
+        if val:
+            if not val.startswith("@"):
+                val = "@" + val
+        return val
+
+    @model_validator(mode="after")
+    def set_url_from_handle(self) -> LiveChannel:
+        if self.handle:
+            self.url = f"https://www.youtube.com/{self.handle}/live"
+        if not self.handle and not self.url.strip():
+            raise ValueError("Either Handle or URL is required")
+        return self
 
 
 class RetryConfig(BaseModel):
@@ -108,6 +119,7 @@ class JobInfo(BaseModel):
     started_at: str
     finished_at: str = ""
     return_code: int | None = None
+    channel_id: str | None = None
 
 
 class FileInfo(BaseModel):
