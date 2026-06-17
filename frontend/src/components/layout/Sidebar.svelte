@@ -22,6 +22,10 @@
       <h1 class="text-xl font-bold tracking-tight bg-linear-to-r from-primary to-secondary bg-clip-text text-transparent">
         {t.appName}
       </h1>
+      <div class="flex items-center gap-1.5 text-xs font-semibold opacity-80 mt-0.5">
+        <span class:bg-success={connected} class:bg-warning={!connected} class="size-2 rounded-full inline-block animate-ping"></span>
+        <span class="opacity-70">{connected ? t.websocketOnline : t.websocketOffline}</span>
+      </div>
     </div>
   </div>
 
@@ -142,11 +146,5 @@
         {/each}
       </div>
     </details>
-  </div>
-
-  <!-- Realtime Connection Status (Moved to bottom) -->
-  <div class="flex items-center gap-1.5 text-xs font-semibold mt-4 px-2 py-1.5 border-t border-base-200/50 opacity-85">
-    <span class:bg-success={connected} class:bg-warning={!connected} class="size-2 rounded-full inline-block animate-ping"></span>
-    <span class="opacity-70">{connected ? t.websocketOnline : t.websocketOffline}</span>
   </div>
 </aside>

@@ -197,23 +197,23 @@
 <div class="drawer lg:drawer-open min-h-screen bg-base-200">
   <input id="app-drawer" type="checkbox" class="drawer-toggle" bind:checked={drawerChecked} />
 
-  <div class="drawer-content flex flex-col min-h-screen min-w-0">
+  <div class="drawer-content flex flex-col min-h-screen">
     <header class="navbar bg-base-100 border-b border-base-200/50 px-4 flex justify-between lg:hidden sticky top-0 z-30 shadow-sm shrink-0">
-      <div class="flex-none mr-4">
+      <div class="flex-none">
         <label for="app-drawer" class="btn btn-ghost btn-square drawer-button">
           <Menu size={20} />
         </label>
       </div>
-      <div class="flex-1 justify-center">
+      <div class="flex-1 justify-center pr-8">
         <span class="text-lg font-bold tracking-tight bg-linear-to-r from-primary to-secondary bg-clip-text text-transparent">
           yt-dlp webui
         </span>
       </div>
     </header>
 
-    <div class="flex-1 flex overflow-hidden min-w-0 relative">
-      <div class="flex-1 overflow-y-auto min-w-0">
-        <main class="p-4 lg:p-6 space-y-6">
+    <div class="flex-1 flex overflow-hidden w-full relative">
+      <div class="flex-1 overflow-y-auto w-full">
+        <main class="p-4 lg:p-6 w-full space-y-6 max-w-7xl mx-auto">
           {#if errorMessage}
             <div class="alert alert-error shadow-sm border border-error/20">
               <span>{errorMessage}</span>
@@ -246,21 +246,17 @@
           {/if}
 
           {#if activeTab === 'settings' && settings}
-            <section class="flex flex-col lg:flex-row gap-6 items-start w-full">
-              <div class="w-full lg:flex-[1.25] lg:min-w-[500px] min-w-0">
-                <SettingsForm bind:settings {busy} onSave={saveSettings} />
-              </div>
-              <div class="w-full lg:flex-[0.75] lg:min-w-[320px] min-w-0">
-                <ToolsStatus
-                  {tools}
-                  {busy}
-                  {downloadPercents}
-                  {toolMessage}
-                  hasRunningJobs={runningLiveJobs.length + runningDownloadJobs.length > 0}
-                  onOpenToolsFolder={openToolsFolder}
-                  onInstallTools={installTools}
-                />
-              </div>
+            <section class="grid gap-6 lg:grid-cols-[1.25fr_0.75fr] w-full items-start">
+              <SettingsForm bind:settings {busy} onSave={saveSettings} />
+              <ToolsStatus
+                {tools}
+                {busy}
+                {downloadPercents}
+                {toolMessage}
+                hasRunningJobs={runningLiveJobs.length + runningDownloadJobs.length > 0}
+                onOpenToolsFolder={openToolsFolder}
+                onInstallTools={installTools}
+              />
             </section>
           {/if}
 
