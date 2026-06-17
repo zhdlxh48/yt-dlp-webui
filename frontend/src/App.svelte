@@ -246,11 +246,11 @@
           {/if}
 
           {#if activeTab === 'settings' && settings}
-            <section class="flex flex-wrap gap-6 items-start">
-              <div class="flex-[1.25] min-w-[280px] sm:min-w-[500px] min-w-0">
+            <section class="flex flex-col lg:flex-row gap-6 items-start w-full">
+              <div class="w-full lg:flex-[1.25] lg:min-w-[500px] min-w-0">
                 <SettingsForm bind:settings {busy} onSave={saveSettings} />
               </div>
-              <div class="flex-[0.75] min-w-[280px] sm:min-w-[320px] min-w-0">
+              <div class="w-full lg:flex-[0.75] lg:min-w-[320px] min-w-0">
                 <ToolsStatus
                   {tools}
                   {busy}
