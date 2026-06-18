@@ -45,7 +45,9 @@ class YtdlpOutputClassifier:
         normalized = split_ytdlp_stream(output.text)
         line = normalized.text
         if output.replace and line.startswith("[download]"):
-            return self._parse_progress_line(line, normalized.stream_id)
+            res = self._parse_progress_line(line, normalized.stream_id)
+            if res is not None:
+                return res
         if self.is_progress_line(line):
             return self._parse_progress_line(line, normalized.stream_id)
         return None
@@ -76,7 +78,7 @@ class YtdlpOutputClassifier:
             return output_path
         return None
 
-    def _parse_progress_line(self, line: str, stream_id: str) -> DownloadProgress:
+    def _parse_progress_line(self, line: str, stream_id: str) -> DownloadProgress | None:
         percent_match = PERCENT_PROGRESS_PATTERN.search(line)
         if percent_match:
             return DownloadProgress(
@@ -99,7 +101,7 @@ class YtdlpOutputClassifier:
                 fragment_total=int(fragment_match.group("fragment_total")),
             )
 
-        return DownloadProgress(line=line, stream_id=stream_id)
+        return None
 
 
 def normalize_ytdlp_line(line: str) -> str:

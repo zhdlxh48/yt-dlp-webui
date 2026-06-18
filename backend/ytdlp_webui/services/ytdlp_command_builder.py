@@ -37,6 +37,7 @@ class YtdlpCommandBuilder:
             custom_output_template=custom_output_template,
             use_download_archive=False,
         )
+        command.extend(["--match-filter", "is_live"])
         command.extend(["--wait-for-video", str(settings.live.wait_for_video_seconds)])
         if settings.live.live_from_start:
             command.append("--live-from-start")
@@ -66,6 +67,7 @@ class YtdlpCommandBuilder:
         output_template = custom_output_template or download.output_template
         command = [
             str(yt_dlp),
+            "--newline",           # 진행률을 \r 아닌 \n으로 출력 (파싱 안정성)
             "--encoding",
             "utf-8",
             "--windows-filenames",
