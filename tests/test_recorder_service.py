@@ -87,10 +87,7 @@ def test_recorder_starts_live_job(tmp_path: Path) -> None:
     assert len(jobs) == 1
     assert jobs[0].status in {"running", "finished"}
     assert not any(event["type"] == "job.progress_line" for event in events.recent)
-    assert any(
-        event["type"] == "job.log" and "regular log line" in event["payload"]["line"]
-        for event in events.recent
-    )
+    assert not any(event["type"] == "job.log" for event in events.recent)
 
     log_file = tmp_path / "Videos" / "yt-dlp.log"
     assert log_file.exists()

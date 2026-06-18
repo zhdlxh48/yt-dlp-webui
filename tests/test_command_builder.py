@@ -25,7 +25,7 @@ def test_live_command_contains_required_ytdlp_options(tmp_path: Path) -> None:
     command = YtdlpCommandBuilder(paths).live(settings, tools, channel)
 
     assert command[0] == str(paths.tools / "yt-dlp" / "yt-dlp.exe")
-    assert "--newline" not in command
+    assert "--newline" in command          # 진행률 줄 단위 출력 (파싱 안정성)
     assert "--download-archive" not in command
     assert command[command.index("--encoding") + 1] == "utf-8"
     assert "--wait-for-video" in command
