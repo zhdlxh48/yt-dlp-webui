@@ -60,7 +60,7 @@ class ProcessOutputParser:
         return raw.decode("utf-8", errors="replace")
 
     def _preferred_encodings(self) -> tuple[str, ...]:
-        candidates = ["utf-8", locale.getpreferredencoding(False), "cp949", "mbcs"]
+        candidates = ["utf-8", "cp949", locale.getpreferredencoding(False), "mbcs"]
         deduplicated = []
         for encoding in candidates:
             if encoding and encoding.lower() not in {item.lower() for item in deduplicated}:
