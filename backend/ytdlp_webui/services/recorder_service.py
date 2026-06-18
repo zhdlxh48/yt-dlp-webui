@@ -37,7 +37,13 @@ class RecorderService:
         self.jobs: dict[str, JobInfo] = {}
         self.processes: dict[str, RunningProcess] = {}
         self.stop_tasks: dict[str, asyncio.Task[int]] = {}
+        self.restart_tasks: dict[str, asyncio.Task[None]] = {}
         self._progress_last_sent: dict[str, float] = {}
+
+    def _cancel_restart_task(self, channel_id: str) -> None:
+        task = self.restart_tasks.pop(channel_id, None)
+        if task and not task.done():
+            task.cancel()
 
     async def list_jobs(self) -> list[JobInfo]:
         return list(self.jobs.values())
@@ -55,6 +61,7 @@ class RecorderService:
         ]
         jobs: list[JobInfo] = []
         for channel in selected_channels:
+            self._cancel_restart_task(channel.id)
             active = self._active_job_for_channel(channel.id)
             if active:
                 jobs.append(active)
@@ -84,16 +91,27 @@ class RecorderService:
         job.status = "stopping"
         await self.events.publish("job.progress", job.model_dump())
 
+        if job.channel_id:
+            self._cancel_restart_task(job.channel_id)
+
         process = self.processes.get(job_id)
         if process is None:
             await self._mark_stopped(job)
             return job
 
-        stop_task = self._request_process_stop(job_id, process, force)
+        # 실제로 다운로드(녹화) 중이 아니면 graceful이 의미없음 (병합할 파일 없음)
+        # --wait-for-video 대기 중, 방송 미시작 등의 경우 즉시 force kill
+        effective_force = force or not job.is_downloading
+
+        stop_task = self._request_process_stop(job_id, process, effective_force)
         if wait:
-            await stop_task
-            await process.output_task
+            try:
+                await stop_task
+                await process.output_task
+            except asyncio.CancelledError:
+                pass
         return job
+
 
     async def stop_all(self) -> None:
         await asyncio.gather(
@@ -122,6 +140,7 @@ class RecorderService:
             command=command,
             started_at=self._now(),
             channel_id=channel_id,
+            is_downloading=(kind == "download"),
         )
         self.jobs[job_id] = job
         await self.events.publish("job.started", job.model_dump())
@@ -161,46 +180,72 @@ class RecorderService:
         if not line:
             return
 
-        log_path = await log_writer.write(line)
-        if log_path is not None:
-            await self.events.publish(
-                "job.log",
-                {"job_id": job.id, "line": f"yt-dlp 상세 로그 저장: {log_path}"},
-            )
+        await log_writer.write(line)
 
         progress = self.output_classifier.parse_progress(output)
         if progress is not None:
+            if not job.is_downloading:
+                job.is_downloading = True
+                await self.events.publish("job.progress", job.model_dump())
             await self._publish_progress_line(job.id, job.title, progress)
             return
 
-        await self.events.publish("job.log", {"job_id": job.id, "line": line})
+        # Toggle is_downloading when we detect actual downloading or merging has started
+        lower_line = line.lower()
+        if (
+            "[download] destination:" in lower_line
+            or "[download]   " in lower_line
+            or "[merger]" in lower_line
+            or "has already been downloaded" in lower_line
+        ):
+            if not job.is_downloading:
+                job.is_downloading = True
+                await self.events.publish("job.progress", job.model_dump())
 
     async def _finish_when_done(self, job_id: str, process: RunningProcess) -> None:
-        code = await process.output_task
+        try:
+            code = await process.output_task
+        except asyncio.CancelledError:
+            code = -1
         self.processes.pop(job_id, None)
         self.stop_tasks.pop(job_id, None)
         self._forget_job_progress(job_id)
 
-        job = self.jobs[job_id]
+        job = self.jobs.get(job_id)
+        if job is None:
+            return
+
+        # already handled (예: stop()에서 직접 mark_stopped 한 경우)
+        if job.status in {"stopped", "finished", "failed"}:
+            return
+
         was_stopping = job.status == "stopping"
         if was_stopping:
             job.status = "stopped"
-        elif job.status != "stopped":
+        else:
             job.status = "finished" if code == 0 else "failed"
 
         job.return_code = code
         job.finished_at = self._now()
-        await self.events.publish(
-            "job.finished" if code == 0 or job.status == "stopped" else "job.error",
-            job.model_dump(),
-        )
+        final_event = "job.finished" if code == 0 or job.status == "stopped" else "job.error"
+        await self.events.publish(final_event, job.model_dump())
         await self.events.publish_log(
             f"작업 종료: {job.title} (종료 코드: {code}, 상태: {job.status})",
             level="info" if code == 0 or job.status == "stopped" else "error",
         )
 
+        # 완료된 job은 120초 후 메모리에서 정리
+        asyncio.create_task(self._cleanup_job_after_delay(job_id))
+
         if job.kind == "live" and job.channel_id and not was_stopping:
-            asyncio.create_task(self._restart_live_after_delay(job.channel_id))
+            self._cancel_restart_task(job.channel_id)
+            task = asyncio.create_task(self._restart_live_after_delay(job.channel_id))
+            self.restart_tasks[job.channel_id] = task
+            task.add_done_callback(
+                lambda _, cid=job.channel_id, t=task: self.restart_tasks.pop(cid, None)
+                if self.restart_tasks.get(cid) == t
+                else None
+            )
 
     async def _restart_live_after_delay(self, channel_id: str) -> None:
         await asyncio.sleep(10)
@@ -212,10 +257,16 @@ class RecorderService:
             )
             await self.start_live([channel_id])
 
+    async def _cleanup_job_after_delay(self, job_id: str, delay: float = 120.0) -> None:
+        """완료된 job을 일정 시간 후 메모리에서 제거합니다."""
+        await asyncio.sleep(delay)
+        self.jobs.pop(job_id, None)
+
     async def _mark_stopped(self, job: JobInfo) -> None:
         job.status = "stopped"
         job.finished_at = self._now()
         await self.events.publish("job.finished", job.model_dump())
+        asyncio.create_task(self._cleanup_job_after_delay(job.id))
 
     async def _publish_progress_line(
         self,
