@@ -18,6 +18,11 @@ class AppPaths:
     settings_file: Path
     archive_file: Path
     default_downloads: Path
+    db_file: Path = Path()
+
+    def __post_init__(self) -> None:
+        if self.db_file == Path():
+            object.__setattr__(self, "db_file", self.app_data / "webui.db")
 
     @classmethod
     def discover(cls) -> AppPaths:
@@ -30,6 +35,7 @@ class AppPaths:
             tools=app_data / "tools",
             settings_file=app_data / "settings.toml",
             archive_file=app_data / "archive.txt",
+            db_file=app_data / "webui.db",
             default_downloads=default_downloads,
         )
 

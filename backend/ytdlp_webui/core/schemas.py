@@ -120,6 +120,7 @@ class JobInfo(BaseModel):
     finished_at: str = ""
     return_code: int | None = None
     channel_id: str | None = None
+    is_downloading: bool = False
 
 
 class FileInfo(BaseModel):
