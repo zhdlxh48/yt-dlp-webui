@@ -45,7 +45,7 @@ function routeEvent(event: AppEvent): void {
     removeProgress(String(event.payload.id ?? ''))
   }
 
-  if (event.type === 'job.log' || event.type === 'system.log') {
+  if (event.type === 'system.log') {
     appendLog(String(event.payload.line ?? ''))
   }
 }

@@ -83,7 +83,7 @@
       class="absolute right-12 top-0 h-full w-96 flex flex-col border-l border-base-200/80 bg-base-100 shadow-2xl z-30 overflow-hidden"
     >
       <!-- Panel Header -->
-      <div class="p-4 border-b border-base-200 flex items-center justify-between bg-base-100 flex-shrink-0">
+      <div class="p-4 border-b border-base-200 flex items-center justify-between bg-base-100 shrink-0">
         <div class="flex items-center gap-2">
           {#if activePanel === 'progress'}
             <Activity size={18} class="text-primary animate-pulse" />

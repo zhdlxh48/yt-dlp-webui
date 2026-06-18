@@ -67,6 +67,7 @@ export type JobInfo = {
   finished_at: string
   return_code: number | null
   channel_id?: string
+  is_downloading?: boolean
 }
 
 export type FileInfo = {

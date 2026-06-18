@@ -34,12 +34,30 @@
     const id = window.setInterval(refreshRuntime, 5000)
 
     const unsubscribe = events.subscribe((evtList) => {
-      const statusEvent = evtList[0]
-      if (statusEvent && statusEvent.type === 'tools.status') {
-        const payload = statusEvent.payload as any
+      const latest = evtList[0]
+      if (!latest) return
+
+      if (latest.type === 'tools.status') {
+        // 도구 설치 진행률 업데이트
+        const payload = latest.payload as any
         if (payload.tool && typeof payload.percent === 'number') {
           downloadPercents[payload.tool] = payload.percent >= 0 ? payload.percent : 0
           downloadPercents = { ...downloadPercents }
+        }
+      } else if (latest.type === 'job.started') {
+        // 새 작업 시작 → 목록 새로고침
+        void api.jobs().then((list) => { jobs = list })
+      } else if (latest.type === 'job.progress') {
+        // 작업 상태/진행 변경 → 해당 job 즉시 업데이트 (폴링 대기 없음)
+        const payload = latest.payload as any
+        if (payload.id) {
+          jobs = jobs.map((j) => (j.id === payload.id ? { ...j, ...payload } : j))
+        }
+      } else if (latest.type === 'job.finished' || latest.type === 'job.error') {
+        // 작업 종료/실패 → 해당 job 즉시 업데이트
+        const payload = latest.payload as any
+        if (payload.id) {
+          jobs = jobs.map((j) => (j.id === payload.id ? { ...j, ...payload } : j))
         }
       }
     })
@@ -49,6 +67,7 @@
       unsubscribe()
     }
   })
+
 
   async function refreshAll() {
     await withBusy(async () => {

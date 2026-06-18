@@ -64,14 +64,16 @@
     </td>
     <td class="text-center whitespace-nowrap">
       {#if activeJob}
+        {@const isDownloading = activeJob.is_downloading}
         <span
           class="badge badge-sm gap-1.5 font-bold border-none shadow-sm"
-          class:badge-success={!isStopping}
+          class:badge-success={!isStopping && isDownloading}
+          class:badge-info={!isStopping && !isDownloading}
           class:badge-warning={isStopping}
           class:animate-pulse={!isStopping}
         >
           <span class="size-1.5 rounded-full bg-current"></span>
-          {isStopping ? '종료 중' : '녹화 중'}
+          {isStopping ? '종료 중' : (isDownloading ? '녹화 중' : '감시 중')}
         </span>
       {:else}
         <span class="badge badge-ghost badge-sm opacity-60 text-xs font-medium">대기</span>
